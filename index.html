@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Breakouts Game</title>
+</head>
+<body>
+   <canvas id="canvas" width="855" height="600" style="border: 2px solid #111;margin-left:210px;"></canvas>
+    
+    
+    <script>
+        var canvas=document.getElementById('canvas');
+var context=canvas.getContext('2d');
+
+var numberOfTile,tileList,WIDTH=canvas.width,HEIGHT=canvas.height,score,level,intervalVal,runing;
+    
+
+context.fillStyle='red';
+context.font='25px Arial';
+ 
+
+context.fillText('START THE GAME',WIDTH/2-100,HEIGHT/2);
+var tile={
+    width:80,
+    height:30,
+    color:'orange',
+
+};
+ 
+var bar={
+    x:0,
+    y:500,
+    width:100,
+    height:30,
+    color:'red',
+    pressingLeft:false,
+    pressingRight:false,
+    lives:3
+};
+
+var ball={
+    x:0,
+    y:0,
+    radius:5,
+    color:'blue',
+    spd_X:-5,
+    spd_Y:-5
+}
+ 
+
+drawBar=function(){
+    context.save();
+    context.fillStyle=bar.color;
+    context.fillRect(bar.x,bar.y,bar.width,bar.height);
+    context.restore();
+};
+drawBall=function(){
+    context.save();
+    context.fillStyle=ball.color;
+    context.beginPath();
+    context.arc(ball.x,ball.y,ball.radius,0,2*Math.PI);
+    context.fill();
+    context.restore();
+};
+drawTile=function(tilee,i){
+    context.save();
+    context.fillStyle=tile.color;
+    context.fillRect(tilee.x,tilee.y,tile.width,tile.height);
+    context.restore();
+};
+
+
+canvas.addEventListener('mousedown',event =>{
+    if(runing){
+        runing=false;
+        clearInterval(intervalVal);
+    }
+    startGame();
+});
+ 
+document.addEventListener('keydown',event =>{
+      if(event.keyCode==37){
+        bar.pressingLeft=true;
+        bar.pressingRight=false;
+         }
+      if(event.keyCode==39){
+         bar.pressingRight=true;
+         bar.pressingLeft=false;;
+         }
+});
+document.addEventListener('keyup',event =>{
+      if(event.keyCode==37){
+        bar.pressingLeft=false;
+         }
+      if(event.keyCode==39){
+         bar.pressingRight=false;
+         }
+});
+
+
+updateBarPosition=function(){
+   
+    if(bar.pressingLeft){
+         
+        bar.x-=5;
+            
+        }
+  
+     if(bar.pressingRight){
+         bar.x+=5;
+    } 
+    if(bar.x<=0)
+        bar.x=0
+    else if(bar.x>=WIDTH-bar.width)
+         bar.x=WIDTH-bar.width;
+};
+
+updateBallPosition=function(){
+    ball.x += ball.spd_X;
+    ball.y += ball.spd_Y;
+   /* if(score==30){
+             if(ball.spd_X<0)
+                 ball.spd_X=-Math.abs(ball.spd_X)+5;
+             else
+                  ball.spd_X+=5;}*/
+    
+    if(ball.x>WIDTH || ball.x <0){
+        ball.spd_X=-ball.spd_X;
+         } 
+    
+        
+    
+     if( ball.y <0)
+        ball.spd_Y=-ball.spd_Y;
+    if(ball.y>HEIGHT){
+         ball.spd_Y=-ball.spd_Y;
+        bar.lives--;
+    }
+   
+        
+};
+
+gameOver=function(){
+    if(bar.lives<0 || score==700){
+        clearInterval(intervalVal);
+        context.fillText('GAME OVER',WIDTH/2-100,HEIGHT/2);
+    }
+        
+};
+  
+updateGame=function(){
+     context.clearRect(0,0,WIDTH,HEIGHT);
+
+     drawBar();
+     drawBall();
+     tileList.forEach(drawTile);
+  
+ 
+    
+    if(testCollision(bar,ball)){ ball.spd_Y=-ball.spd_Y; }
+        
+      for(key in tileList){
+          if(testCollisionTile(tileList[key],ball)){
+             delete tileList[key];
+           ball.spd_Y=-ball.spd_Y;
+          score+=10;
+          }
+           
+      }
+    
+     updateBallPosition();
+     updateBarPosition();
+    context.fillText('Score : '+score,WIDTH-160,HEIGHT-30);
+    context.fillText('lives : '+bar.lives,WIDTH-800,HEIGHT-30);
+    
+    gameOver();
+};
+
+testCollisionTile=function(til,ball){
+       return((til.x<ball.x +2*ball.radius)&&
+           (ball.x<til.x +tile.width)&&
+           (til.y<ball.y +2*ball.radius)&&
+           (ball.y<til.y +tile.height)
+    );
+    
+};
+
+testCollision=function(bar,ball){
+    return((bar.x<ball.x +2*ball.radius)&&
+           (ball.x<bar.x +bar.width)&&
+           (bar.y<ball.y +2*ball.radius)&&
+           (ball.y<bar.y +bar.height)
+    );
+    
+};
+ startGame=function(){
+   
+     bar.x=400;
+     ball.x=bar.x+100;
+     ball.y=bar.y-100;
+    
+     numberOfTile=0;
+     var tile_X=5;
+     var tile_Y=5;
+     tileList=[];
+     
+     for(var i=1;i<=7;i++){
+         for(var j=1;j<=10;j++){
+             tileList[numberOfTile]={x:tile_X,y:tile_Y};
+             numberOfTile++;
+             tile_X+=85;
+         }
+         tile_X=5;
+         tile_Y+=35;
+     }
+    score=0;
+     bar.lives=3;
+     runing=true;
+     //level=1;
+    intervalVal=setInterval(updateGame,20);
+ 
+};
+
+ 
+
+
+
+
+
+ 
+    </script>
+</body>
+</html>
